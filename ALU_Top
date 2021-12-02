@@ -1,0 +1,43 @@
+`timescale 100 ns / 1 ns 
+
+module alu(clk50, ar, a, b, mode, sign, disp_int_tens,disp_int_ones );
+	input clk50, ar;
+	input signed [3:0]a;
+	input signed [3:0]b;
+	input [1:0]mode;
+	output sign;
+	output [6:0] disp_int_tens,disp_int_ones;
+	
+	reg signed [7:0] a_ext, b_ext;
+	reg signed [7:0] mult_out;
+	wire signed [7:0] add, sub, product;
+	
+	assign add = a_ext + b_ext;
+	assign sub = a_ext - b_ext;
+	assign product = a_ext * b_ext;
+	
+	always @(negedge ar or posedge clk50)
+		if(~ar)
+			begin
+			a_ext = 8'b0;
+			b_ext = 8'b0;
+			mult_out = 8'b0;  // 16?
+			end
+		else
+			begin
+			a_ext = a;
+			b_ext = b;
+			
+			case(mode)
+				2'b00: mult_out = add;
+				2'b01: mult_out = sub;
+				default: mult_out = product;
+			endcase;
+			end
+	wire signed [7:0] out_2comp;
+	wire [7:0] out_mag;
+	
+	assign sign = mult_out[7];
+	assign out_2comp = ~mult_out + 1'b1;
+	
+	assign out_mag = sign = out_2comp : mult_out;

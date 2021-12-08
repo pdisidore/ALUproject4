@@ -1,0 +1,146 @@
+`timescale 100 ns / 1 ns 
+
+module alu(clk50, ar, a, b, mode, sign, sign_a, sign_b, disp_int_tens,disp_int_ones, disp_a, disp_b );
+	input clk50, ar;
+	input signed [3:0]a;
+	input signed [3:0]b;
+	input [1:0]mode;
+	output sign,sign_a, sign_b;
+	output [6:0] disp_int_tens,disp_int_ones,disp_a, disp_b;
+	
+	reg signed [7:0] a_ext, b_ext;
+	reg signed [7:0] mult_out;
+	wire signed [7:0] add, sub, product;
+	
+	assign add = a_ext + b_ext;
+	assign sub = a_ext - b_ext;
+	assign product = a_ext * b_ext;
+	
+	always @(negedge ar or posedge clk50)
+		if(~ar)
+			begin
+			a_ext = 8'b0;
+			b_ext = 8'b0;
+			mult_out = 8'b0;  // 16?
+			end
+		else
+			begin
+			a_ext = a;
+			b_ext = b;
+			
+			case(mode)
+				2'b00: mult_out = add;
+				2'b01: mult_out = sub;
+				default: mult_out = product;
+			endcase;
+			end
+	wire signed [7:0] out_2comp, out_2comp_a, out_2comp_b;
+	wire [7:0] out_mag, out_mag_a, out_mag_b;
+	reg [3:0]mag_ones, mag_tens;
+	
+	assign sign = mult_out[7];
+	assign sign_a = a_ext[7];
+	assign sign_b = b_ext[7];
+	
+	assign out_2comp = ~mult_out + 1'b1;
+	assign out_2comp_a = ~a_ext + 1'b1;
+	assign out_2comp_b = ~b_ext + 1'b1;
+	
+	assign out_mag = sign ? out_2comp : mult_out;
+	assign out_mag_a = sign_a ? out_2comp_a : a_ext;
+	assign out_mag_b = sign_b ? out_2comp_b : b_ext; 
+	
+	assign disp_a =
+		(out_mag_a == 4'h0) ? 7'b1000000 :
+		(out_mag_a == 4'h1) ? 7'b1111001 :
+		(out_mag_a == 4'h2) ? 7'b0100100 :
+		(out_mag_a == 4'h3) ? 7'b0110000 :
+		(out_mag_a == 4'h4) ? 7'b0011001 :
+		(out_mag_a == 4'h5) ? 7'b0010010 :
+		(out_mag_a == 4'h6) ? 7'b0000010 :  
+		(out_mag_a == 4'h7) ? 7'b1111000 :
+		(out_mag_a == 4'h8) ? 7'b0000000 :
+		(out_mag_a == 4'h9) ? 7'b0010000 :
+		(out_mag_a == 4'ha) ? 7'b0001000 :
+		(out_mag_a == 4'hb) ? 7'b0000011 :
+		(out_mag_a == 4'hc) ? 7'b1000110 :
+		(out_mag_a == 4'hd) ? 7'b0100001 :
+		(out_mag_a == 4'he) ? 7'b0000110 :
+						7'b0001110 ;
+	
+	assign disp_b =
+		(out_mag_b == 4'h0) ? 7'b1000000 :
+		(out_mag_b == 4'h1) ? 7'b1111001 :
+		(out_mag_b == 4'h2) ? 7'b0100100 :
+		(out_mag_b == 4'h3) ? 7'b0110000 :
+		(out_mag_b == 4'h4) ? 7'b0011001 :
+		(out_mag_b == 4'h5) ? 7'b0010010 :
+		(out_mag_b == 4'h6) ? 7'b0000010 :  
+		(out_mag_b == 4'h7) ? 7'b1111000 :
+		(out_mag_b == 4'h8) ? 7'b0000000 :
+		(out_mag_b == 4'h9) ? 7'b0010000 :
+		(out_mag_b == 4'ha) ? 7'b0001000 :
+		(out_mag_b == 4'hb) ? 7'b0000011 :
+		(out_mag_b == 4'hc) ? 7'b1000110 :
+		(out_mag_b == 4'hd) ? 7'b0100001 :
+		(out_mag_b == 4'he) ? 7'b0000110 :
+						7'b0001110 ;
+	
+	integer int;
+	always@(out_mag)
+		begin
+		mag_tens = 4'd0;
+		mag_ones = 4'd0;
+		
+		for (i=7; i >= 0; i=i-1)
+		begin
+			// add 3 to columns >= 5
+
+			if(mag_tens >= 5)
+				mag_tens = mag_tens + 3;
+			if(mag_ones >= 5)
+				mag_ones = mag_ones + 3;
+				
+			//shift left ones
+			mag_tens = mag_tens << 1;
+			mag_tens[0] = mag_ones[3];
+			mag_ones = mag_ones << 1;
+			mag_ones[0] = binary[i];
+		end
+	end
+	assign disp_int_tens =
+		(mag_tens == 4'h0) ? 7'b1000000 :
+		(mag_tens == 4'h1) ? 7'b1111001 :
+		(mag_tens == 4'h2) ? 7'b0100100 :
+		(mag_tens == 4'h3) ? 7'b0110000 :
+		(mag_tens == 4'h4) ? 7'b0011001 :
+		(mag_tens == 4'h5) ? 7'b0010010 :
+		(mag_tens == 4'h6) ? 7'b0000010 :  
+		(mag_tens == 4'h7) ? 7'b1111000 :
+		(mag_tens == 4'h8) ? 7'b0000000 :
+		(mag_tens == 4'h9) ? 7'b0010000 :
+		(mag_tens == 4'ha) ? 7'b0001000 :
+		(mag_tens == 4'hb) ? 7'b0000011 :
+		(mag_tens == 4'hc) ? 7'b1000110 :
+		(mag_tens == 4'hd) ? 7'b0100001 :
+		(mag_tens == 4'he) ? 7'b0000110 :
+						7'b0001110 ;
+	assign disp_int_ones =
+		(mag_ones == 4'h0) ? 7'b1000000 :
+		(mag_ones == 4'h1) ? 7'b1111001 :
+		(mag_ones == 4'h2) ? 7'b0100100 :
+		(mag_ones == 4'h3) ? 7'b0110000 :
+		(mag_ones == 4'h4) ? 7'b0011001 :
+		(mag_ones == 4'h5) ? 7'b0010010 :
+		(mag_ones == 4'h6) ? 7'b0000010 :  
+		(mag_ones == 4'h7) ? 7'b1111000 :
+		(mag_ones == 4'h8) ? 7'b0000000 :
+		(mag_ones == 4'h9) ? 7'b0010000 :
+		(mag_ones == 4'ha) ? 7'b0001000 :
+		(mag_ones == 4'hb) ? 7'b0000011 :
+		(mag_ones == 4'hc) ? 7'b1000110 :
+		(mag_ones == 4'hd) ? 7'b0100001 :
+		(mag_ones == 4'he) ? 7'b0000110 :
+						7'b0001110 ;
+	
+endmodule

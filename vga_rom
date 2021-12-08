@@ -124,7 +124,7 @@ module vga_rom(CLOCK_50, ar, VGA_R, VGA_G, VGA_B, VGA_HS, VGA_VS, VGA_BLANK, VGA
        begin
 	  if(video_on_v & video_on_h) // Allow non-zero RGB only within the 640x480 area
 	    begin
-	      if(hcount > 7 && hcount < 56)
+	      if(hcount > 7 && hcount < 72)
 				begin
 					r = shift_reg[7];
 					g = r;

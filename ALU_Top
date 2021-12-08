@@ -1,6 +1,6 @@
 `timescale 100 ns / 1 ns 
 
-module alu_Top(clk50, ar, a, b, mode, sign, sign_a, sign_b, disp_int_tens,disp_int_ones, disp_a, disp_b);
+module Alu_Top(clk50, ar, a, b, mode, sign, sign_a, sign_b, disp_int_tens,disp_int_ones, disp_a, disp_b);
 	input clk50, ar;
 	input signed [3:0]a;
 	input signed [3:0]b;

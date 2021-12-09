@@ -1,6 +1,17 @@
-module vga_rom(CLOCK_50, ar, VGA_R, VGA_G, VGA_B, VGA_HS, VGA_VS, VGA_BLANK, VGA_SYNC, VGA_CLK, sa, A, mode, B, sb, ABsout, ABout, ABout2);
-   input CLOCK_50; // 50 MHz input clock
+/*vga_rom.v
+Author: Judson Dull
+Edited by: Phillip Disidore
+*/
+
+module vga_rom(CLOCK_50, ar, VGA_R, VGA_G, VGA_B, VGA_HS, VGA_VS, VGA_BLANK, VGA_SYNC, VGA_CLK,
+ sa, A, mode, B, sb, ABsout, ABout, ABout2);
+    input CLOCK_50; // 50 MHz input clock
 	input ar;  // Active low asynchronous reset
+	
+	input sa, sb, ABsout;
+	input [1:0] mode;
+	input [7:0] B, A, ABout, ABout2;
+	
    output [7:0] VGA_R, VGA_G, VGA_B; // Red, green, and blue outputs
    output VGA_HS;   // Output horizontal synch
    output VGA_VS;   // Output vertical synch
@@ -65,7 +76,7 @@ module vga_rom(CLOCK_50, ar, VGA_R, VGA_G, VGA_B, VGA_HS, VGA_VS, VGA_BLANK, VGA
 		(6'o52);    // +,-,*
 	assign disp_char[3] = sb ? 6'o55 : 6'o40;   // -, 
 	assign disp_char[4] = {2'b11, B};   // 1
-	assign disp_char[5] = 6'o40;   // =  
+	assign disp_char[5] = 6'o42;   // =  
 	assign disp_char[6] = ABsout ? 6'o55 : 6'o40;   // -,
  	assign disp_char[7] = {2'b11, ABout};   // 7,6,5
 	assign disp_char[8] = {2'b11, ABout2};   // 7,6,5

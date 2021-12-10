@@ -8,7 +8,8 @@ module vga_rom(CLOCK_50, ar, VGA_R, VGA_G, VGA_B, VGA_HS, VGA_VS, VGA_BLANK, VGA
     input CLOCK_50; // 50 MHz input clock
 	input ar;  // Active low asynchronous reset
 	
-	input sa, sb, ABsout;
+
+	input sb,sa,ABsout;
 	input [1:0] mode;
 	input [7:0] B, A, ABout, ABout2;
 	
@@ -58,28 +59,28 @@ module vga_rom(CLOCK_50, ar, VGA_R, VGA_G, VGA_B, VGA_HS, VGA_VS, VGA_BLANK, VGA
 	
 	wire [5:0] disp_char [8:0];   // Two-dimensional array that holds characters to be displayed
 	
-	input sa;
-	input [3:0] A;
-	input [1:0]mode;
-	input sb;
-	input [3:0] B;
-	input ABsout;
-	input [3:0] ABout;
-	input [3:0] ABout2;
+	//input sa;
+	//input [3:0] A;
+	//input [1:0]mode;
+	//input sb;
+	//input [3:0] B;
+	//input ABsout;
+	//input [7:0] ABout;
+	//input [7:0] ABout2;
 
 	
 	assign disp_char[0] = sa ? 6'o55 : 6'o40;   // -,
-	assign disp_char[1] = {2'b11, A};   // 6
+	assign disp_char[1] = {2'b11,1200+ A};   // 6
 	assign disp_char[2] = 
 		(mode==2'b00)? (6'o53):
 		(mode==2'b01)? (6'o55):
 		(6'o52);    // +,-,*
 	assign disp_char[3] = sb ? 6'o55 : 6'o40;   // -, 
-	assign disp_char[4] = {2'b11, B};   // 1
+	assign disp_char[4] = {2'b11,1200+ B};   // 1
 	assign disp_char[5] = 6'o42;   // =  
 	assign disp_char[6] = ABsout ? 6'o55 : 6'o40;   // -,
- 	assign disp_char[7] = {2'b11, ABout};   // 7,6,5
-	assign disp_char[8] = {2'b11, ABout2};   // 7,6,5
+ 	assign disp_char[7] = {2'b11,1200+ ABout};   // 7,6,5
+	assign disp_char[8] = {2'b11,1200+ ABout2};   // 7,6,5
 	
 /*	reg [1:0] line_ctr;
 	
@@ -135,7 +136,7 @@ module vga_rom(CLOCK_50, ar, VGA_R, VGA_G, VGA_B, VGA_HS, VGA_VS, VGA_BLANK, VGA
        begin
 	  if(video_on_v & video_on_h) // Allow non-zero RGB only within the 640x480 area
 	    begin
-	      if(hcount > 7 && hcount < 72)
+	      if(hcount > 7 && hcount < 79)
 				begin
 					r = shift_reg[7];
 					g = r;
